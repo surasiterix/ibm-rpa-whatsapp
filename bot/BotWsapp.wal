@@ -1,0 +1,141 @@
+�@defVar --name requiresLink --type Boolean
+defVar --name browserInstance --type Browser
+defVar --name lastChatMessage --type String
+defVar --name lastMessageTime --type String
+defVar --name emojiName --type String
+defVar --name message --type String
+defVar --name telephoneNumber --type String
+defVar --name imageFileName --type String
+defVar --name uploadWindow --type Window
+defVar --name listadoPautas --type String --parameter 
+defVar --name excelInstance --type Excel
+defVar --name coleccionPautas --type DataTable
+defVar --name listadoIterator --type Numeric
+defVar --name salutacion --type String
+defVar --name clientName --type String
+defVar --name messageP1 --type String
+defVar --name emoticono --type String
+defVar --name bandera --type String
+defVar --name messageP2 --type String
+goSub --label readExcel
+if --left "${coleccionPautas.Rows}" --operator "Greater_Than_Equal_To" --right 1
+	//# Se inicializa Firefox para ejecutar whatsapp
+	webStart --name webBrowser --type "Firefox" --commandexecutiontimeout "00:01:00" --pageloadtimeout "00:01:00" browserInstance=value
+	goSub --label initWhatsapp
+	for --variable ${listadoIterator} --from 1 --to ${coleccionPautas.Rows} --step 1
+		mapTableRow --dataTable ${coleccionPautas} --row ${listadoIterator} --mappings "name=Salutación=${salutacion},name=Nombre=${clientName},name=Pauta=${imageFileName},name=Inicio=${messageP1},name=Emoticón=${emoticono},name=Bandera=${bandera},name=Cierre=${messageP2},name=Teléfono=${telephoneNumber}"
+		goSub --label newChatWindow
+		goSub --label sendInfo2Client
+	next
+	webClose --name webBrowser
+endIf
+beginSub --name sendMessage
+logMessage --message "Envío mensaje" --type "Info"
+//# Se hace click en el botón de enviar mensaje
+webClick --selector "CssSelector" --css "._4sWnG" --simulatehuman 
+endSub
+beginSub --name initWhatsapp
+//# se abre la página de whatsapp web
+logMessage --message "Abriendo página web de Whatsapp" --type "Info"
+webNavigate --url "https://web.whatsapp.com"
+webWait --timeout "00:01:00"
+repeat
+	//# Se valida si se requiere permiso desde el célular para usar wshatsapp desde el equipo del bot launcher
+	ifWebContains --text "Para usar WhatsApp en tu computadora:" requiresLink=value
+	logMessage --message "Me encuentro en la página de vinculación? ${requiresLink}" --type "Info"
+	delay --timeout "00:00:05"
+until --left "${requiresLink}" --operator "Equal_To" --right true
+endSub
+beginSub --name addEmoji
+//# Se hace click en la opción de insertar emoji
+logMessage --message "Abriendo ventana de emojis" --type "Info"
+webWaitElement --selector "CssSelector" --css "button._23sAs:nth-child(2)" --timeout "00:00:20"
+webClick --selector "CssSelector" --css "button._23sAs:nth-child(2)" --simulatehuman 
+logMessage --message "Coloco en la búsqueda: ${emojiName}" --type "Info"
+//# Se escribe el nombre del emoji deseado
+webSet --value "${emojiName}" --selector "CssSelector" --css "._3K9QW" --simulatehuman 
+logMessage --message "Selecciono el primer emoji" --type "Info"
+//# Se selecciona el primer emoji encontrado
+webClick --selector "XPath" --xpath "/html/body/div/div[1]/div[1]/div[4]/div[1]/footer/div[2]/div/div[3]/div[1]/div/div[1]/div[2]/div/div[1]/div/div[1]/div/div/div/div/div/span" --simulatehuman 
+//# Se cierra la ventana de emojis
+logMessage --message "Cierro ventana de Emojis" --type "Info"
+webClick --selector "CssSelector" --css "button._23sAs:nth-child(1)" --simulatehuman 
+endSub
+beginSub --name writeMessage
+//# Se hace foco en el campo para escribir el mensaje
+webWaitElement --selector "CssSelector" --css "._1LbR4 > div:nth-child(2)" --timeout "00:00:20"
+logMessage --message "Escribo el mensaje ${message}" --type "Info"
+//# Se "tipea" el mensaje a enviar. Ojo, no se envía de forma automática. Hay que pedir un send usando la sub "sendMessage"
+webSendKeys --value "${message}" --selector "CssSelector" --css "._1LbR4 > div:nth-child(2)" --simulatehuman 
+endSub
+beginSub --name readLastMessage
+//# Tomando el último mensaje enviado en la ventana de chat actual
+webGet --selector "CssSelector" --css "div._2wUmf.message-in:last-child > div:nth-child(2) > div:nth-child(1) > div:nth-child(2) > div:nth-child(1) > div:nth-child(1) > span:nth-child(1) > span:nth-child(1)" lastChatMessage=value
+webGet --selector "CssSelector" --css "div._2wUmf.message-in:last-child > div:nth-child(2) > div:nth-child(1) > div:nth-child(2) > div:nth-child(2) > div:nth-child(1) > span:nth-child(1)" lastMessageTime=value
+logMessage --message "Último mensaje fue a las ${lastMessageTime}: ${lastChatMessage}" --type "Info"
+endSub
+beginSub --name newChatWindow
+//# Se abre la ventana de chat para el número de teléfono seleccionado, sin importar si existe como contacto}
+webNavigate --url "https://web.whatsapp.com/send?phone=${telephoneNumber}"
+webWait --timeout "00:01:00"
+logMessage --message "Abriendo chat con ${telephoneNumber}" --type "Info"
+endSub
+beginSub --name addImage2Message
+//# Se abren las opciones de adjunto dando click al "Clip"
+logMessage --message "Adjuntando imagen al chat" --type "Info"
+webClick --selector "CssSelector" --css "._2jitM > div:nth-child(1) > div:nth-child(1)" --simulatehuman 
+//# Se selecciona fotos, imágenes o videos
+webClick --selector "CssSelector" --css "li._2qR8G:nth-child(1) > button:nth-child(1)" --simulatehuman 
+logMessage --message "Seleccionando adjunto de tipo imagen" --type "Info"
+//# Se toma control de la ventana emergente para la carga de archivos
+waitWindow --title "Carga de archivos" --timeout "00:00:05" uploadWindow=value
+findWindow --title "Carga de archivos" uploadWindow=value
+attachWindow --window ${uploadWindow}
+setValue --value "${imageFileName}" --setValueType "Text" --algorithm "FocusAndType" --simulatehuman  --selector "IdAndName" --id 1148 --name "File name:"
+click --selector "IdAndName" --controlsimilarity 100 --simulatehuman  --id 1 --name Open
+logMessage --message "Enviando imagenes" --type "Info"
+//# Se regresa al browser para continuar con el envío de la imagen
+webAttach --browser ${browserInstance} --name webBrowser
+webWaitElement --selector "CssSelector" --css "._165_h" --timeout "00:00:05"
+//# Se hace click a la fecha verde para enviar la imagen
+webClick --selector "CssSelector" --css "._165_h" --simulatehuman 
+logMessage --message "Imagen enviada" --type "Info"
+endSub
+beginSub --name readExcel
+//# Si no se recibió el excel de las pautas como entrada, se solicita sea seleccionado
+if --left "${listadoPautas}" --operator "Is_Null"
+	selectFile --title "Listado de Pautas" --filter "*.xlsx" listadoPautas=filepath
+endIf
+logMessage --message "Accediendo listado de pautas en ${listadoPautas}" --type "Info"
+//# Se abre el excel para procesar
+excelOpen --file "${listadoPautas}" excelInstance=value
+//# Se lee la tabla en la hoja y se carga en una colección para su posterior procesamiento
+excelGetTable --file ${excelInstance} --sheet Sheet1 --entiretable  --hasheaders  coleccionPautas=value
+logMessage --message "Se obtuvieron ${coleccionPautas.Rows} filas a procesar" --type "Info"
+excelClose --file ${excelInstance}
+endSub
+beginSub --name sendInfo2Client
+//# Mapeo columnas a variables
+//# Envío salutación al cliente
+logMessage --message "Enviando salutación" --type "Info"
+setVar --name "${message}" --value "Hola ${salutacion} ${clientName}. Soy un robot que utiliza Whatsapp para comunicarse"
+goSub --label writeMessage
+goSub --label sendMessage
+//# Creando mensaje de la pauta
+setVar --name "${message}" --value "${messageP1}"
+goSub --label writeMessage
+//# Agregando emoticono
+setVar --name "${emojiName}" --value "${emoticono}"
+goSub --label addEmoji
+//# Agregando bandera del país
+setVar --name "${emojiName}" --value "${bandera}"
+goSub --label addEmoji
+//# Agregando imagen de la pauta
+logMessage --message "Añadiendo imagen de la pauta" --type "Info"
+goSub --label addImage2Message
+//# Enviando enlace para mas información
+logMessage --message "Enviando enlace para más información" --type "Info"
+setVar --name "${message}" --value "${messageP2}"
+goSub --label writeMessage
+goSub --label sendMessage
+endSub*	20.12.5.0
