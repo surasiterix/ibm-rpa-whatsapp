@@ -109,3 +109,11 @@ Si todo salió bien, el resultado final debe lucir así
 ![AltText](images/wsapp-resultado.png)
 
 Este ejemplo usa la pauta creada para una capacitación a canales en Paraguay realizada el 19/08/2021
+
+## Autor y reconocimientos
+
+* Manuel Cuevas ([@surasiterix](https://github.com/surasiterix))
+
+## Licencia
+
+El contenido de este repositorio está licenciado siguiendo los térnimos de [Apache 2.0](https://www.apache.org/licenses/LICENSE-2.0).
