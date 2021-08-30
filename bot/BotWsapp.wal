@@ -1,4 +1,4 @@
-ä@defVar --name requiresLink --type Boolean
+á@defVar --name requiresLink --type Boolean
 defVar --name browserInstance --type Browser
 defVar --name lastChatMessage --type String
 defVar --name lastMessageTime --type String
@@ -91,8 +91,8 @@ logMessage --message "Seleccionando adjunto de tipo imagen" --type "Info"
 waitWindow --title "Carga de archivos" --timeout "00:00:05" uploadWindow=value
 findWindow --title "Carga de archivos" uploadWindow=value
 attachWindow --window ${uploadWindow}
-setValue --value "${imageFileName}" --setValueType "Text" --algorithm "FocusAndType" --simulatehuman  --selector "IdAndName" --id 1148 --name "File name:"
-click --selector "IdAndName" --controlsimilarity 100 --simulatehuman  --id 1 --name Open
+setValue --value "${imageFileName}" --setValueType "Text" --algorithm "FocusAndType" --simulatehuman  --selector "XPath" --xpath "/root/combobox[2]"
+click --selector "XPath" --controlsimilarity 100 --simulatehuman  --xpath "/root/button[2]"
 logMessage --message "Enviando imagenes" --type "Info"
 //# Se regresa al browser para continuar con el env√≠o de la imagen
 webAttach --browser ${browserInstance} --name webBrowser
