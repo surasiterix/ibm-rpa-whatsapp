@@ -1,4 +1,4 @@
-‡@defVar --name requiresLink --type Boolean
+œ@defVar --name requiresLink --type Boolean
 defVar --name browserInstance --type Browser
 defVar --name lastChatMessage --type String
 defVar --name lastMessageTime --type String
@@ -98,7 +98,7 @@ logMessage --message "Enviando imagenes" --type "Info"
 webAttach --browser ${browserInstance} --name webBrowser
 webWaitElement --selector "CssSelector" --css "._165_h" --timeout "00:00:05"
 //# Se hace click a la fecha verde para enviar la imagen
-webClick --selector "CssSelector" --css "._165_h" --simulatehuman 
+webClick --selector "CssSelector" --css "._165_h" --simulatehuman  --timeout "00:00:20"
 logMessage --message "Imagen enviada" --type "Info"
 endSub
 beginSub --name readExcel
